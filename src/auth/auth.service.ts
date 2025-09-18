@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { RegisterDto } from 'src/dtos/auth.dtos';
+import { JwtPayloadDto, JwtResponseDto, LoginDto, RegisterDto } from 'src/dtos/auth.dtos';
 import { BaseDto } from 'src/dtos/base.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -15,6 +15,7 @@ export class AuthService {
     // 🔹 hanya untuk testing (echo request)
     testRegister(body: RegisterDto): RegisterDto {
         return {
+            username: body.username,
             email: body.email,
             password: body.password,
             confirmPassword: body.confirmPassword,
@@ -27,15 +28,24 @@ export class AuthService {
         if (body.password !== body.confirmPassword) {
             throw new UnauthorizedException('Password and Confirm Password do not match');
         }
-        const existingUser = await this.prisma.user.findUnique({ where: { email: body.email } });
-        if (existingUser) {
+        // Check if email already exists
+        const existingEmail = await this.prisma.user.findUnique({ where: { email: body.email } });
+        if (existingEmail) {
             throw new UnauthorizedException('Email already in use');
         }
+
+        // Check if username already exists
+        const existingUsername = await this.prisma.user.findUnique({ where: { username: body.username } });
+        if (existingUsername) {
+            throw new UnauthorizedException('Username already in use');
+        }
+
         // hash password dulu
         const hashed = await bcrypt.hash(body.password, 10);
 
         const user = await this.prisma.user.create({
             data: {
+                username: body.username,
                 email: body.email,
                 password: hashed,
             },
@@ -43,34 +53,42 @@ export class AuthService {
 
         return {
             id: user.id, // pake id asli dari DB
-            statusCode: 201,
             message: 'User registered successfully',
-            timestamp: new Date(),
             payload: {
+                username: user.username,
                 email: user.email,
             },
+            statusCode: 201,
+            timestamp: new Date(),
         };
     }
 
     // 🔹 Login user
-    async userLogin(email: string, password: string): Promise<BaseDto> {
-        const user = await this.prisma.user.findUnique({ where: { email } });
+    async userLogin(body: LoginDto): Promise<JwtResponseDto> {
+        const user = await this.prisma.user.findUnique({ where: { email: body.email } });
         if (!user) throw new UnauthorizedException('Invalid credentials');
 
-        const isPasswordValid = await bcrypt.compare(password, user.password);
+        const isPasswordValid = await bcrypt.compare(body.password, user.password);
         if (!isPasswordValid) throw new UnauthorizedException('Invalid credentials');
 
-        const token = this.jwtService.sign({
-            sub: user.id,
+        const payload: JwtPayloadDto = {
+            uid: user.id,
             email: user.email,
-        });
+        };
+
+        const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
+        const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+
 
         return {
             id: user.id,
-            statusCode: 201,
+            statusCode: 200,
             message: 'Login success',
             timestamp: new Date(),
-            payload: { access_token: token },
+            payload: {
+                accessToken,
+                refreshToken,
+            },
         };
     }
 

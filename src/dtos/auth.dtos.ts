@@ -9,11 +9,18 @@ export class RegisterDto {
     email: string;
 
     @IsString()
+    @MinLength(2)
+    @IsNotEmpty()
+    username: string;
+
+    @IsString()
     @MinLength(8)
+    @IsNotEmpty()
     password: string;
 
     @IsString()
     @MinLength(8)
+    @IsNotEmpty()
     confirmPassword: string;
 }
 
@@ -44,17 +51,15 @@ export class RefreshTokenDto extends BaseDto {
  * JWT Payload
  * (isi token yang di-*sign* dan di-*verify*)
  */
-export class JwtPayloadDto extends BaseDto {
-    uid: string;     // user id (uuid dari prisma)
+
+export class JwtPayloadDto {
+    uid: string;     // user.id (uuid dari prisma)
     email: string;
-    exp?: number;    // optional, diisi otomatis oleh JWT
-    iat?: number;    // optional, diisi otomatis oleh JWT
+    exp?: number;    // diisi otomatis oleh JWT
+    iat?: number;    // diisi otomatis oleh JWT
 }
 
-/**
- * JWT Response
- * (token yang dikembalikan ke client)
- */
+
 class JwtResponsePayload {
     accessToken: string;
     refreshToken?: string; // kalau pakai refresh token

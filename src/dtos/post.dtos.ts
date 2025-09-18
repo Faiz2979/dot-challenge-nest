@@ -1,8 +1,8 @@
-import { IsDate, IsNotEmpty, IsString } from "class-validator";
-import { BaseDto } from "./base.dto";
+import { IsNotEmpty, IsString } from "class-validator";
+import { BaseDto, PaginationDto } from "./base.dto";
 
 
-class CreatePostDtoPayload {
+export class CreatePostDtoPayload {
     @IsString()
     @IsNotEmpty()
     title: string;
@@ -11,26 +11,19 @@ class CreatePostDtoPayload {
     @IsNotEmpty()
     content: string;
 
-    @IsString()
-    @IsNotEmpty()
-    authorId: string;
-
-    @IsDate()
-    @IsNotEmpty()
-    createdAt: Date;
 }
 
-class CreatePostDto extends BaseDto<CreatePostDtoPayload> { }
+export class CreatePostDtoResponse extends BaseDto<CreatePostDtoPayload> { }
 
-class UpdatePostDtoPayload {
+export class UpdatePostDtoPayload {
     @IsString()
     title?: string;
 
     @IsString()
     content?: string;
-
 }
 
-class UpdatePostDto extends BaseDto<UpdatePostDtoPayload> { }
+export class GetPostByUserDtoResponse extends PaginationDto<any[]> { }
 
-export { CreatePostDto as PostDto };
+export class UpdatePostDtoResponse extends BaseDto<UpdatePostDtoPayload> { }
+
