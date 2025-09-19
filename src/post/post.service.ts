@@ -1,7 +1,7 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { JwtPayloadDto } from "src/dtos/auth.dtos";
-import { CreatePostDtoPayload, CreatePostDtoResponse, GetPostByUserDtoResponse } from "src/dtos/post.dtos";
+import { AllPostsDtoResponse, CreatePostDtoPayload, CreatePostDtoResponse, DeletePostResponse, GetPostByUserDtoResponse, UpdatePostDtoPayload, UpdatePostDtoResponse } from "src/dtos/post.dtos";
 import { PrismaService } from "src/prisma/prisma.service";
 
 @Injectable()
@@ -64,20 +64,7 @@ export class PostService {
         });
 
         if (!user) {
-            return {
-                // id: null,
-                statusCode: 404,
-                message: 'User not found',
-                timestamp: new Date(),
-                payload: [],
-                meta: {
-                    totalItems: 0,
-                    itemCount: 0,
-                    itemsPerPage: limit,
-                    totalPages: 0,
-                    currentPage: page,
-                },
-            };
+            throw new NotFoundException('User not found');
         }
 
         // Hitung total items
@@ -91,6 +78,11 @@ export class PostService {
             skip,
             take: limit,
             orderBy: { createdAt: 'desc' }, // optional, biar lebih rapi
+            include: {
+                user: {
+                    select: { username: true }
+                }
+            }
         });
         if (posts.length === 0) {
             return {
@@ -108,11 +100,22 @@ export class PostService {
             };
         }
 
+        // Map posts to include username and convert dates to string if needed
+        const mappedPosts = posts.map(post => ({
+            id: post.id,
+            username: post.user.username,
+            title: post.title,
+            content: post.content,
+            userId: post.userId,
+            createdAt: post.createdAt instanceof Date ? post.createdAt.toISOString() : post.createdAt,
+            updatedAt: post.updatedAt instanceof Date ? post.updatedAt.toISOString() : post.updatedAt,
+        }));
+
         return {
             statusCode: 200,
             message: 'Posts retrieved successfully',
             timestamp: new Date(),
-            payload: posts,
+            payload: mappedPosts,
             meta: {
                 totalItems,
                 itemCount: posts.length,
@@ -123,9 +126,94 @@ export class PostService {
         };
     }
 
+    async getAllPosts(filter: { page?: number; limit?: number }): Promise<AllPostsDtoResponse> {
+        // Default nilai pagination
+        const page = filter.page && filter.page > 0 ? filter.page : 1;
+        const limit = filter.limit && filter.limit > 0 ? filter.limit : 10;
+        const skip = (page - 1) * limit;
 
-    // 🔹 Kalau memang butuh decode manual
-    async decodeToken(token: string): Promise<JwtPayloadDto> {
-        return this.verifyToken(token);
+
+        const posts = await this.prisma.post.findMany({
+            orderBy: { createdAt: 'desc' },
+            skip,
+            take: limit,
+            include: {
+                user: {
+                    select: { username: true }
+                }
+            }
+
+        });
+        const totalItems = posts.length;
+
+        return {
+            statusCode: 200,
+            message: 'All posts retrieved successfully',
+            timestamp: new Date(),
+            payload: posts.map(post => ({
+                id: post.id,
+                username: post.user.username,
+                title: post.title,
+                content: post.content,
+                userId: post.userId,
+                createdAt: post.createdAt instanceof Date ? post.createdAt.toISOString() : post.createdAt,
+                updatedAt: post.updatedAt instanceof Date ? post.updatedAt.toISOString() : post.updatedAt,
+            })),
+            meta: {
+                totalItems,
+                itemCount: posts.length,
+                itemsPerPage: totalItems,
+                totalPages: 1,
+                currentPage: 1,
+            },
+        };
+    }
+
+    async deletePost(postId: string, token: string): Promise<DeletePostResponse> {
+        const decoded = await this.verifyToken(token);
+        if (!decoded) {
+            throw new UnauthorizedException('Invalid User');
+        }
+        const post = await this.prisma.post.delete({
+            where: { id: postId, userId: decoded.uid },
+        });
+
+        return {
+            id: post?.id,
+            statusCode: 200,
+            message: 'Post deleted successfully',
+            timestamp: new Date(),
+            payload: null,
+        }
+    }
+
+    async updatePost(postId: string, payload: UpdatePostDtoPayload, token: string): Promise<UpdatePostDtoResponse> {
+        const decoded = await this.verifyToken(token);
+        if (!decoded) {
+            throw new UnauthorizedException('Invalid User');
+        }
+
+        const existingPost = await this.prisma.post.findUnique({
+            where: { id: postId, userId: decoded.uid },
+        });
+        if (!existingPost) {
+            throw new NotFoundException('Post not found or you are not the owner');
+        }
+
+        const post = await this.prisma.post.update({
+            where: { id: postId, userId: decoded.uid },
+            data: payload,
+        });
+
+        return {
+            id: post?.id,
+            statusCode: 200,
+            message: 'Post updated successfully',
+            timestamp: new Date(),
+            payload: {
+                title: post.title,
+                content: post.content,
+            },
+        };
     }
 }
