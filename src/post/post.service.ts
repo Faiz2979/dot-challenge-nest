@@ -25,7 +25,9 @@ export class PostService {
     // 🔹 Buat Post
     async createPost(payload: CreatePostDtoPayload, token: string): Promise<CreatePostDtoResponse> {
         const decoded = await this.verifyToken(token);
-
+        if (payload.title == "" || payload.content == "") {
+            throw new NotFoundException('Title or Content cannot be empty');
+        }
         const post = await this.prisma.post.create({
             data: {
                 title: payload.title,
@@ -174,6 +176,13 @@ export class PostService {
         if (!decoded) {
             throw new UnauthorizedException('Invalid User');
         }
+        const existingPost = await this.prisma.post.findUnique({
+            where: { id: postId, userId: decoded.uid },
+        });
+
+        if (!existingPost) {
+            throw new NotFoundException('Post not found');
+        }
         const post = await this.prisma.post.delete({
             where: { id: postId, userId: decoded.uid },
         });
@@ -197,7 +206,7 @@ export class PostService {
             where: { id: postId, userId: decoded.uid },
         });
         if (!existingPost) {
-            throw new NotFoundException('Post not found or you are not the owner');
+            throw new NotFoundException('Post not found');
         }
 
         const post = await this.prisma.post.update({
