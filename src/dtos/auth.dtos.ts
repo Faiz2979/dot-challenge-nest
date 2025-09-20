@@ -6,6 +6,7 @@ import { BaseDto } from './base.dto';
  */
 export class RegisterDto {
     @IsEmail()
+    @IsNotEmpty()
     email: string;
 
     @IsString()

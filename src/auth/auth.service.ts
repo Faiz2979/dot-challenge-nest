@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { JwtPayloadDto, JwtResponseDto, LoginDto, RegisterDto } from 'src/dtos/auth.dtos';
@@ -26,18 +26,18 @@ export class AuthService {
     async userRegister(body: RegisterDto): Promise<BaseDto> {
 
         if (body.password !== body.confirmPassword) {
-            throw new UnauthorizedException('Password and Confirm Password do not match');
+            throw new BadRequestException('Password and Confirm Password do not match');
         }
         // Check if email already exists
         const existingEmail = await this.prisma.user.findUnique({ where: { email: body.email } });
         if (existingEmail) {
-            throw new UnauthorizedException('Email already in use');
+            throw new BadRequestException('Email already in use');
         }
 
         // Check if username already exists
         const existingUsername = await this.prisma.user.findUnique({ where: { username: body.username } });
         if (existingUsername) {
-            throw new UnauthorizedException('Username already in use');
+            throw new BadRequestException('Username already in use');
         }
 
         // hash password dulu
@@ -66,10 +66,10 @@ export class AuthService {
     // 🔹 Login user
     async userLogin(body: LoginDto): Promise<JwtResponseDto> {
         const user = await this.prisma.user.findUnique({ where: { email: body.email } });
-        if (!user) throw new UnauthorizedException('Invalid credentials');
+        if (!user) throw new UnauthorizedException('Email Tidak Terdaftar');
 
         const isPasswordValid = await bcrypt.compare(body.password, user.password);
-        if (!isPasswordValid) throw new UnauthorizedException('Invalid credentials');
+        if (!isPasswordValid) throw new UnauthorizedException('Password Salah');
 
         const payload: JwtPayloadDto = {
             uid: user.id,
