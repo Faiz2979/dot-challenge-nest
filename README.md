@@ -92,7 +92,6 @@ npm run start:dev
 ---
 
 ## 📖 API Documentation
-### ⚒️🚧 On Progress 🚧⚒️
 Dokumentasi API tersedia dalam collection **Postman/Apidog**:  
 - Register User  
 - Login User  
@@ -124,11 +123,11 @@ testing bisa dilakukan manual dengan api yang sudah tersedia, dan juga ada Testi
 ---
 
 ## 🎥 Video Demo
+### ⚒️🚧 On Progress 🚧⚒️
 Video demo dikerjakan sesuai kriteria:
 
 👉 [Link Video Demo](#) *(isi dengan link Loom recording)*
 
---- -->
 
 ## 👤 Author
 Dibuat oleh **Muhammad Faiz Annabil** untuk Challenge Backend Engineer TypeScript DOT.
