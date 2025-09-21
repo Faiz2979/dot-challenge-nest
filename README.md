@@ -93,7 +93,7 @@ npm run start:dev
 
 ## 📖 API Documentation
 ### ⚒️🚧 On Progress 🚧⚒️
-<!-- Dokumentasi API tersedia dalam collection **Postman/Apidog**:  
+Dokumentasi API tersedia dalam collection **Postman/Apidog**:  
 - Register User  
 - Login User  
 - Create Post  
@@ -106,25 +106,25 @@ npm run start:dev
 --- -->
 
 ## 🧪 E2E Testing
-### ⚒️🚧 On Progress 🚧⚒️
-<!-- E2E Test dilakukan dengan **Apidog Testing**:
+E2E Test dilakukan dengan **Apidog Testing**:
 - ✅ Register user baru  
 - ✅ Login dan mendapatkan JWT Token  
 - ✅ Akses endpoint Post tanpa token (gagal)  
 - ✅ Akses endpoint Post dengan token (berhasil)  
 - ✅ Validasi update/delete hanya bisa dilakukan oleh pemilik post  
 
-👉 Semua test case tersedia di collection **Apidog**.  
+👉 Semua test case tersedia di ***Collection*** yang ada pada 
+```
+docs/
+│── Nest.apidog.json    # Untuk format Apidog
+│── Nest.postman.json   # Untuk format Postman
+```
+testing bisa dilakukan manual dengan api yang sudah tersedia, dan juga ada Testing Otomatis nya
 
 ---
 
 ## 🎥 Video Demo
 Video demo dikerjakan sesuai kriteria:
-1. Menunjukkan aplikasi berjalan di seluruh halaman  
-2. Menjelaskan hasil pengerjaan dari tiap poin challenge  
-3. Presentasi dengan kamera on  
-4. Recording menggunakan [Loom](https://www.loom.com/)  
-5. Link hasil recording disediakan di form submission  
 
 👉 [Link Video Demo](#) *(isi dengan link Loom recording)*
 
