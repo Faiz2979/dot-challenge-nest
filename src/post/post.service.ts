@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { JwtPayloadDto } from "src/dtos/auth.dtos";
-import { AllPostsDtoResponse, CreatePostDtoPayload, CreatePostDtoResponse, DeletePostResponse, GetPostByUserDtoResponse, UpdatePostDtoPayload, UpdatePostDtoResponse } from "src/dtos/post.dtos";
-import { PrismaService } from "src/prisma/prisma.service";
+import { JwtPayloadDto } from "../dtos/auth.dtos";
+import { AllPostsDtoResponse, CreatePostDtoPayload, CreatePostDtoResponse, DeletePostResponse, GetPostByUserDtoResponse, UpdatePostDtoPayload, UpdatePostDtoResponse } from "../dtos/post.dtos";
+import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
 export class PostService {
@@ -26,7 +26,7 @@ export class PostService {
     async createPost(payload: CreatePostDtoPayload, token: string): Promise<CreatePostDtoResponse> {
         const decoded = await this.verifyToken(token);
         if (payload.title == "" || payload.content == "") {
-            throw new NotFoundException('Title or Content cannot be empty');
+            throw new NotFoundException('Judul Atau Konten tidak boleh kosong');
         }
         const post = await this.prisma.post.create({
             data: {
@@ -66,7 +66,7 @@ export class PostService {
         });
 
         if (!user) {
-            throw new NotFoundException('User not found');
+            throw new NotFoundException('User tidak ditemukan');
         }
 
         // Hitung total items
@@ -89,7 +89,7 @@ export class PostService {
         if (posts.length === 0) {
             return {
                 statusCode: 200,
-                message: 'No posts found for this user',
+                message: 'Tidak ada postingan ditemukan untuk pengguna ini',
                 timestamp: new Date(),
                 payload: [],
                 meta: {
@@ -115,7 +115,7 @@ export class PostService {
 
         return {
             statusCode: 200,
-            message: 'Posts retrieved successfully',
+            message: 'Post berhasil diambil',
             timestamp: new Date(),
             payload: mappedPosts,
             meta: {
@@ -150,7 +150,7 @@ export class PostService {
 
         return {
             statusCode: 200,
-            message: 'All posts retrieved successfully',
+            message: 'Semua postingan berhasil diambil',
             timestamp: new Date(),
             payload: posts.map(post => ({
                 id: post.id,
@@ -174,14 +174,14 @@ export class PostService {
     async deletePost(postId: string, token: string): Promise<DeletePostResponse> {
         const decoded = await this.verifyToken(token);
         if (!decoded) {
-            throw new UnauthorizedException('Invalid User');
+            throw new UnauthorizedException('User tidak valid');
         }
         const existingPost = await this.prisma.post.findUnique({
             where: { id: postId, userId: decoded.uid },
         });
 
         if (!existingPost) {
-            throw new NotFoundException('Post not found');
+            throw new NotFoundException('Post tidak ditemukan');
         }
         const post = await this.prisma.post.delete({
             where: { id: postId, userId: decoded.uid },
@@ -190,7 +190,7 @@ export class PostService {
         return {
             id: post?.id,
             statusCode: 200,
-            message: 'Post deleted successfully',
+            message: 'Post berhasil dihapus',
             timestamp: new Date(),
             payload: null,
         }
@@ -199,14 +199,14 @@ export class PostService {
     async updatePost(postId: string, payload: UpdatePostDtoPayload, token: string): Promise<UpdatePostDtoResponse> {
         const decoded = await this.verifyToken(token);
         if (!decoded) {
-            throw new UnauthorizedException('Invalid User');
+            throw new UnauthorizedException('User tidak valid');
         }
 
         const existingPost = await this.prisma.post.findUnique({
             where: { id: postId, userId: decoded.uid },
         });
         if (!existingPost) {
-            throw new NotFoundException('Post not found');
+            throw new NotFoundException('Post tidak ditemukan');
         }
 
         const post = await this.prisma.post.update({
@@ -217,7 +217,7 @@ export class PostService {
         return {
             id: post?.id,
             statusCode: 200,
-            message: 'Post updated successfully',
+            message: 'Post berhasil diperbarui',
             timestamp: new Date(),
             payload: {
                 title: post.title,
