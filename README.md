@@ -86,7 +86,7 @@ npx prisma migrate dev
 
 ### 4️⃣ Run Project
 ```bash
-npm run start:dev
+npm run dev
 ```
 
 ---
@@ -100,9 +100,12 @@ Dokumentasi API tersedia dalam collection **Postman/Apidog**:
 - Update Post  
 - Delete Post  
 
-👉 [Link Dokumentasi API](#) *(isi dengan link Apidog/Postman export)*
+Dokumentasi API bisa diakses dengan path
+`` localhost:3000/api/docs ``
+### 👉 [Link Dokumentasi API](http://localhost:3000/api/docs) 
 
---- -->
+### NOTE: Pastikan server sudah di run
+
 
 ## 🧪 E2E Testing
 E2E Test dilakukan dengan **Apidog Testing**:
@@ -118,15 +121,7 @@ docs/
 │── Nest.apidog.json    # Untuk format Apidog
 │── Nest.postman.json   # Untuk format Postman
 ```
-testing bisa dilakukan manual dengan api yang sudah tersedia, dan juga ada Testing Otomatis nya
-
----
-
-## 🎥 Video Demo
-### ⚒️🚧 On Progress 🚧⚒️
-Video demo dikerjakan sesuai kriteria:
-
-👉 [Link Video Demo](#) *(isi dengan link Loom recording)*
+testing bisa dilakukan manual dengan api yang sudah tersedia, dan juga ada Testing Otomatis di collection Apidog
 
 
 ## 👤 Author
